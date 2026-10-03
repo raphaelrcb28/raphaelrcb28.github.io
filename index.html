@@ -1,727 +1,559 @@
 <!DOCTYPE html>
-<html lang="pt-BR" class="h-full bg-slate-950">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Fala Mobile</title>
-    
-    <!-- Tailwind CSS -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Fala Mobile - App de Comunicação CAA</title>
+    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- FontAwesome Icons -->
+    <!-- FontAwesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts Inter -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-    
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                    },
-                    colors: {
-                        mobileBg: '#0f172a'
-                    }
-                }
-            }
-        }
-    </script>
-
     <style>
-        /* Mobile touch and app experience optimizations */
+        /* Custom scrollbar and touch optimizations */
         body {
-            overscroll-behavior-y: none;
-            -webkit-user-select: none;
-            user-select: none;
-            touch-action: manipulation;
-        }
-
-        /* Active Feedback for Touch Buttons */
-        .touch-btn {
-            transition: transform 0.08s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.15s ease, box-shadow 0.15s ease;
             -webkit-tap-highlight-color: transparent;
-        }
-        .touch-btn:active {
-            transform: scale(0.93) translateY(1px);
-        }
-
-        /* Custom Mobile Scrollbars */
-        .mobile-scroll::-webkit-scrollbar {
-            width: 4px;
-            height: 4px;
-        }
-        .mobile-scroll::-webkit-scrollbar-track {
-            background: transparent;
-        }
-        .mobile-scroll::-webkit-scrollbar-thumb {
-            background: rgba(148, 163, 184, 0.3);
-            border-radius: 99px;
+            user-select: none;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
         }
 
-        /* Screen Transitions */
-        .tab-page {
+        .no-scrollbar::-webkit-scrollbar {
             display: none;
         }
-        .tab-page.active {
-            display: flex;
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
         }
 
-        /* Safe Area Padding for modern smartphones */
-        .pb-safe {
-            padding-bottom: env(safe-area-inset-bottom, 12px);
+        /* Pulsing animation for speech output */
+        @keyframes pulse-ring {
+            0% { transform: scale(0.95); opacity: 0.8; }
+            50% { transform: scale(1.02); opacity: 1; }
+            100% { transform: scale(0.95); opacity: 0.8; }
         }
-        .pt-safe {
-            padding-top: env(safe-area-inset-top, 8px);
+
+        .speaking-active {
+            animation: pulse-ring 1.2s infinite ease-in-out;
         }
     </style>
 </head>
-<body class="h-full w-full flex items-center justify-center p-0 sm:p-3 bg-slate-950 font-sans antialiased text-slate-800">
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col justify-between overflow-x-hidden antialiased">
 
-    <!-- Smartphone Frame Container -->
-    <div class="w-full h-full max-w-md bg-slate-100 sm:rounded-[36px] sm:shadow-2xl sm:border-8 sm:border-slate-800 flex flex-col overflow-hidden relative border-0">
-
-        <!-- Mobile Header -->
-        <header class="bg-slate-900 text-white pt-safe px-3.5 py-2.5 flex flex-col gap-2 flex-shrink-0 shadow-md">
+    <!-- TOP HEADER -->
+    <header class="bg-slate-800 border-b border-slate-700 px-4 py-3 sticky top-0 z-30 shadow-md">
+        <div class="max-w-md mx-auto flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+                <div class="w-8 h-8 rounded-full bg-purple-600 flex items-center justify-center text-white font-bold">
+                    <i class="fa-solid fa-comments"></i>
+                </div>
+                <div>
+                    <h1 class="text-base font-bold text-white leading-tight">FALA MOBILE</h1>
+                    <p class="text-xs text-slate-400">Voz & Comunicação</p>
+                </div>
+            </div>
             
-            <div class="flex items-center justify-between">
-                <!-- App Title -->
+            <!-- Voice Selector Quick Toggle -->
+            <div class="flex items-center bg-slate-900 rounded-lg p-1 border border-slate-700 text-xs">
+                <span class="text-slate-400 px-2 flex items-center gap-1">
+                    <i class="fa-solid fa-volume-high"></i> Voz
+                </span>
+                <button id="btnVoiceFemale" onclick="definirVozGenerica('female')" class="px-2 py-1 rounded bg-purple-600 text-white font-medium transition-all">
+                    <i class="fa-solid fa-venus"></i>
+                </button>
+                <button id="btnVoiceMale" onclick="definirVozGenerica('male')" class="px-2 py-1 rounded text-slate-400 hover:text-white transition-all">
+                    <i class="fa-solid fa-mars"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN CONTENT CONTAINER -->
+    <main class="flex-1 max-w-md mx-auto w-full p-3 pb-24 flex flex-col gap-3">
+
+        <!-- FEEDBACK BAR (SPEECH OUTPUT BANNER) -->
+        <div id="speakingBanner" class="bg-slate-800 border border-slate-700 rounded-xl p-3 shadow-inner flex items-center justify-between min-h-[56px]">
+            <div class="flex items-center space-x-3 overflow-hidden">
+                <div id="speakIcon" class="w-10 h-10 rounded-lg bg-slate-700 flex items-center justify-center text-slate-400 flex-shrink-0 transition-all">
+                    <i class="fa-solid fa-comment-dots text-lg"></i>
+                </div>
+                <div class="truncate">
+                    <span class="text-xs uppercase tracking-wider text-slate-500 font-semibold block">Última fala:</span>
+                    <p id="txtUltimaFala" class="text-sm font-bold text-purple-300 truncate">Toque em qualquer botão para falar</p>
+                </div>
+            </div>
+            <button onclick="repetirUltimaFala()" class="w-9 h-9 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-200 flex items-center justify-center flex-shrink-0 ml-2 active:scale-95 transition-all" title="Repetir fala">
+                <i class="fa-solid fa-rotate-right"></i>
+            </button>
+        </div>
+
+        <!-- SEÇÃO / SUB-NÍVEIS (MOSTRADO NO TOPO QUANDO SELECIONADO) -->
+        <div id="painelSubNivel" class="hidden bg-purple-950/70 border-2 border-purple-500/80 rounded-xl p-3 shadow-lg flex-col gap-3">
+            <div class="flex items-center justify-between border-b border-purple-800/60 pb-2">
                 <div class="flex items-center gap-2">
-                    <div class="w-8 h-8 rounded-xl bg-purple-600 text-white flex items-center justify-center font-black text-sm shadow-sm">
-                        <i class="fa-solid fa-hands-asl-interpreting"></i>
-                    </div>
+                    <i class="fa-solid fa-folder-open text-purple-400"></i>
+                    <h2 id="subNivelTitulo" class="text-sm font-bold text-purple-100 uppercase tracking-wide">Opções da Categoria</h2>
+                </div>
+                <button onclick="fecharSubNivel()" class="px-2.5 py-1 text-xs bg-purple-900/80 hover:bg-purple-800 text-purple-200 rounded-lg border border-purple-700 flex items-center gap-1 font-semibold active:scale-95 transition-all">
+                    <i class="fa-solid fa-arrow-left"></i> Voltar
+                </button>
+            </div>
+            
+            <div id="conteudoSubNivel" class="grid grid-cols-2 gap-2">
+                <!-- Botões de subnível renderizados via JS -->
+            </div>
+        </div>
+
+        <!-- ABA 1: PRANCHA PRINCIPAL (NÍVEL 1 + MACROS) -->
+        <div id="tabPrancha" class="flex flex-col gap-3">
+            
+            <!-- CATEGORIAS PADRÃO NÍVEL 1 -->
+            <div class="bg-slate-800/80 border border-slate-700/80 rounded-xl p-3">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+                        <i class="fa-solid fa-layer-group text-purple-400"></i> Categorias Principais
+                    </span>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-2">
+                    <button onclick="abrirCategoriaPadrao('Comida')" class="h-14 rounded-lg bg-gradient-to-r from-amber-600 to-amber-700 text-white font-bold text-sm shadow flex items-center justify-center gap-2 active:scale-95 transition-all hover:brightness-110">
+                        <i class="fa-solid fa-utensils"></i> Comida
+                    </button>
+                    <button onclick="abrirCategoriaPadrao('Dor')" class="h-14 rounded-lg bg-gradient-to-r from-rose-600 to-rose-700 text-white font-bold text-sm shadow flex items-center justify-center gap-2 active:scale-95 transition-all hover:brightness-110">
+                        <i class="fa-solid fa-kit-medical"></i> Dor & Corpo
+                    </button>
+                    <button onclick="abrirCategoriaPadrao('Banheiro')" class="h-14 rounded-lg bg-gradient-to-r from-cyan-600 to-cyan-700 text-white font-bold text-sm shadow flex items-center justify-center gap-2 active:scale-95 transition-all hover:brightness-110">
+                        <i class="fa-solid fa-restroom"></i> Banheiro
+                    </button>
+                    <button onclick="abrirCategoriaPadrao('Cumprimento')" class="h-14 rounded-lg bg-gradient-to-r from-emerald-600 to-emerald-700 text-white font-bold text-sm shadow flex items-center justify-center gap-2 active:scale-95 transition-all hover:brightness-110">
+                        <i class="fa-solid fa-hand"></i> Saudações
+                    </button>
+                </div>
+            </div>
+
+            <!-- MACROS PERSONALIZADAS COM EXCLUSÃO -->
+            <div class="bg-slate-800/80 border border-slate-700/80 rounded-xl p-3 relative">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+                        <i class="fa-solid fa-star text-amber-400"></i> Minhas Macros Criadas
+                    </span>
+                    <button onclick="alternarModoExclusao()" id="btnModoExcluir" class="text-xs bg-slate-700 hover:bg-slate-600 text-slate-300 px-2.5 py-1 rounded-lg border border-slate-600 flex items-center gap-1 transition-all">
+                        <i class="fa-solid fa-trash-can text-red-400"></i> Excluir Macro
+                    </button>
+                </div>
+
+                <div id="containerMacros" class="grid grid-cols-2 gap-2 min-h-[80px]">
+                    <!-- Macros carregadas dinamicamente do localStorage -->
+                </div>
+
+                <!-- Botão Flutuante de Atalho/Aviso de Exclusão no canto inferior direito -->
+                <div class="flex justify-end mt-3 pt-2 border-t border-slate-700/50">
+                    <button onclick="alternarModoExclusao()" class="bg-red-600/90 hover:bg-red-600 text-white text-xs font-bold px-3 py-1.5 rounded-lg border border-red-500 shadow flex items-center gap-1.5 active:scale-95 transition-all">
+                        <i class="fa-solid fa-trash-can"></i> Excluir
+                    </button>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ABA 2: CRIAR/EDITAR MACROS -->
+        <div id="tabCriarMacro" class="hidden flex-col gap-3">
+            <div class="bg-slate-800 border border-slate-700 rounded-xl p-4">
+                <h2 class="text-sm font-bold text-purple-300 uppercase tracking-wide mb-3 flex items-center gap-2">
+                    <i class="fa-solid fa-circle-plus"></i> Nova Macro / Categoria
+                </h2>
+
+                <div class="space-y-3">
                     <div>
-                        <h1 class="font-extrabold text-sm leading-tight tracking-tight">FALA MOBILE</h1>
-                        <p class="text-[10px] text-purple-300 font-medium">Voz & Interação</p>
+                        <label class="block text-xs font-medium text-slate-400 mb-1">Nome do Botão Principal (ex: Mãe, Remédio):</label>
+                        <input type="text" id="inputNomeMacro" placeholder="Digite o nome da categoria..." class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-purple-500">
                     </div>
-                </div>
 
-                <!-- Live Talking Pill -->
-                <div id="speechIndicator" class="hidden flex items-center gap-1.5 px-2.5 py-1 bg-emerald-500/20 text-emerald-400 text-[10px] font-bold rounded-full border border-emerald-500/40">
-                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
-                    <span>Falando...</span>
-                </div>
-            </div>
-
-            <!-- Seletor de Voz (Feminino / Masculino PT-BR) -->
-            <div class="bg-slate-800/90 border border-slate-700/80 rounded-xl p-1.5 flex items-center justify-between gap-2 shadow-inner">
-                <div class="flex items-center gap-1.5 pl-1">
-                    <i class="fa-solid fa-microphone-lines text-purple-400 text-xs"></i>
-                    <span class="text-[10px] font-extrabold text-slate-300 uppercase tracking-wider">Voz PT-BR:</span>
-                </div>
-                <div class="grid grid-cols-2 gap-1 w-48">
-                    <button id="btnVozFem" onclick="selecionarGeneroVoz('feminino')" class="touch-btn bg-purple-600 text-white font-extrabold text-[11px] py-1 px-2 rounded-lg flex items-center justify-center gap-1 shadow-xs">
-                        <i class="fa-solid fa-venus text-xs"></i> Feminino
-                    </button>
-                    <button id="btnVozMasc" onclick="selecionarGeneroVoz('masculino')" class="touch-btn bg-slate-700 text-slate-300 font-extrabold text-[11px] py-1 px-2 rounded-lg flex items-center justify-center gap-1">
-                        <i class="fa-solid fa-mars text-xs"></i> Masculino
-                    </button>
-                </div>
-            </div>
-        </header>
-
-        <!-- Main Content Area -->
-        <main class="flex-1 flex flex-col min-h-0 overflow-hidden relative bg-slate-100">
-
-            <!-- TAB 1: VOLTAR (MAIN BOARD) -->
-            <div id="tabPrancha" class="tab-page active flex-1 flex flex-col p-2.5 gap-2 min-h-0 overflow-hidden">
-
-                <!-- Color Key Category Strip -->
-                <div class="flex h-1.5 w-full rounded-full overflow-hidden flex-shrink-0 shadow-xs">
-                    <div class="w-1/7 bg-yellow-400" title="Pessoas"></div>
-                    <div class="w-1/7 bg-emerald-400" title="Verbos"></div>
-                    <div class="w-1/7 bg-orange-400" title="Objetos"></div>
-                    <div class="w-1/7 bg-sky-400" title="Adjetivos"></div>
-                    <div class="w-1/7 bg-pink-400" title="Social"></div>
-                    <div class="w-1/7 bg-purple-400" title="Perguntas"></div>
-                    <div class="w-1/7 bg-red-400" title="Emoções"></div>
-                </div>
-
-                <!-- Scrollable Cards Box -->
-                <div class="flex-1 flex flex-col gap-2.5 overflow-y-auto mobile-scroll pr-0.5">
-
-                    <!-- LEVEL 1: Main Categories & Custom User Macros -->
-                    <div class="bg-white border border-slate-200 rounded-2xl p-2.5 shadow-sm relative flex flex-col">
-                        <div class="flex items-center justify-between mb-2 pb-1.5 border-b border-slate-100">
-                            <span class="text-[11px] font-extrabold uppercase tracking-wider text-purple-700 flex items-center gap-1">
-                                <i class="fa-solid fa-layer-group"></i> Nível 1 - Categorias
-                            </span>
-                            <span class="text-[10px] font-semibold text-slate-400">Toque para abrir</span>
-                        </div>
-
-                        <!-- Grid of Main Buttons -->
-                        <div class="grid grid-cols-2 gap-2 pb-11">
-                            <!-- Default Categories -->
-                            <button onclick="selecionarNivel1('Comida')" class="touch-btn flex items-center gap-2 bg-amber-100 hover:bg-amber-200 text-amber-950 border border-amber-300/80 rounded-xl p-2.5 font-bold text-xs shadow-xs">
-                                <i class="fa-solid fa-utensils text-amber-600 text-sm"></i> Comida
-                            </button>
-                            <button onclick="selecionarNivel1('Dor')" class="touch-btn flex items-center gap-2 bg-rose-100 hover:bg-rose-200 text-rose-950 border border-rose-300/80 rounded-xl p-2.5 font-bold text-xs shadow-xs">
-                                <i class="fa-solid fa-notes-medical text-rose-600 text-sm"></i> Dor / Corpo
-                            </button>
-                            <button onclick="selecionarNivel1('Banheiro')" class="touch-btn flex items-center gap-2 bg-cyan-100 hover:bg-cyan-200 text-cyan-950 border border-cyan-300/80 rounded-xl p-2.5 font-bold text-xs shadow-xs">
-                                <i class="fa-solid fa-restroom text-cyan-600 text-sm"></i> Banheiro
-                            </button>
-                            <button onclick="selecionarNivel1('Cumprimento')" class="touch-btn flex items-center gap-2 bg-pink-100 hover:bg-pink-200 text-pink-950 border border-pink-300/80 rounded-xl p-2.5 font-bold text-xs shadow-xs">
-                                <i class="fa-solid fa-comments text-pink-600 text-sm"></i> Cumprimento
-                            </button>
-                            <button onclick="selecionarNivel1('Resposta')" class="touch-btn flex items-center gap-2 bg-indigo-100 hover:bg-indigo-200 text-indigo-950 border border-indigo-300/80 rounded-xl p-2.5 font-bold text-xs shadow-xs">
-                                <i class="fa-solid fa-reply text-indigo-600 text-sm"></i> Resposta
-                            </button>
-
-                            <!-- Custom User Macros Container -->
-                            <div id="containerMacrosNivel1" class="contents"></div>
-                        </div>
-
-                        <!-- Delete Button -->
-                        <div class="absolute bottom-2 right-2">
-                            <button onclick="abrirModalExcluirMacros()" 
-                                    class="touch-btn flex items-center gap-1 bg-red-600 active:bg-red-700 text-white font-extrabold text-[11px] px-3 py-1.5 rounded-lg shadow-md shadow-red-200 border border-red-500">
-                                <i class="fa-solid fa-trash-can text-xs"></i>
-                                <span>Excluir</span>
-                            </button>
+                    <div class="border-t border-slate-700 pt-3">
+                        <label class="block text-xs font-medium text-slate-400 mb-2">Digite até 5 opções de falas para esta categoria:</label>
+                        <div class="space-y-2">
+                            <input type="text" id="inputFala1" placeholder="Fala 1 (ex: Mãe, vem cá)" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-white focus:outline-none focus:border-purple-500">
+                            <input type="text" id="inputFala2" placeholder="Fala 2 (ex: Mãe, preciso de ajuda)" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-white focus:outline-none focus:border-purple-500">
+                            <input type="text" id="inputFala3" placeholder="Fala 3 (ex: Mãe, quero água)" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-white focus:outline-none focus:border-purple-500">
+                            <input type="text" id="inputFala4" placeholder="Fala 4 (ex: Mãe, que horas são?)" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-white focus:outline-none focus:border-purple-500">
+                            <input type="text" id="inputFala5" placeholder="Fala 5 (ex: Te amo, mãe)" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-white focus:outline-none focus:border-purple-500">
                         </div>
                     </div>
 
-                    <!-- LEVEL 2: Sub Options / Dynamic Phrases -->
-                    <div id="painelNivel2" class="hidden bg-purple-50/80 border-2 border-purple-200 rounded-2xl p-2.5 shadow-sm transition-all">
-                        <div class="flex items-center justify-between mb-2 pb-1.5 border-b border-purple-200">
-                            <span id="labelNivel2" class="text-[11px] font-extrabold uppercase tracking-wider text-purple-900 flex items-center gap-1">
-                                <i class="fa-solid fa-list-ul"></i> Nível 2
-                            </span>
-                            <button onclick="fecharAteNivel(1)" class="text-purple-400 hover:text-purple-700 p-1">
-                                <i class="fa-solid fa-xmark font-bold text-xs"></i>
-                            </button>
-                        </div>
-                        <div id="conteudoNivel2" class="flex flex-wrap gap-1.5"></div>
-                    </div>
-
-                    <!-- LEVEL 3: Detail / Variety -->
-                    <div id="painelNivel3" class="hidden bg-indigo-50/80 border-2 border-indigo-200 rounded-2xl p-2.5 shadow-sm transition-all">
-                        <div class="flex items-center justify-between mb-2 pb-1.5 border-b border-indigo-200">
-                            <span id="labelNivel3" class="text-[11px] font-extrabold uppercase tracking-wider text-indigo-900 flex items-center gap-1">
-                                <i class="fa-solid fa-tags"></i> Nível 3
-                            </span>
-                            <button onclick="fecharAteNivel(2)" class="text-indigo-400 hover:text-indigo-700 p-1">
-                                <i class="fa-solid fa-xmark font-bold text-xs"></i>
-                            </button>
-                        </div>
-                        <div id="conteudoNivel3" class="flex flex-wrap gap-1.5"></div>
-                    </div>
-
-                </div>
-            </div>
-
-            <!-- TAB 2: MINHAS MACROS (FORMULÁRIO DE CRIAÇÃO) -->
-            <div id="tabMacros" class="tab-page flex-1 flex-col p-3 gap-3 min-h-0 overflow-y-auto mobile-scroll">
-                <div class="bg-white border border-slate-200 rounded-2xl p-3.5 shadow-sm space-y-3">
-                    <div class="flex items-center gap-2 border-b border-slate-100 pb-2">
-                        <div class="w-7 h-7 rounded-lg bg-purple-100 text-purple-700 flex items-center justify-center text-xs font-bold">
-                            <i class="fa-solid fa-plus"></i>
-                        </div>
-                        <div>
-                            <h2 class="font-extrabold text-sm text-slate-800">Criar Nova Macro</h2>
-                            <p class="text-[10px] text-slate-400">Gera um botão personalizado no Nível 1</p>
-                        </div>
-                    </div>
-
-                    <form onsubmit="salvarMacroForm(event)" class="space-y-2.5">
-                        <div>
-                            <label for="nomeMacroGrupo" class="block text-xs font-bold text-slate-700 mb-1">
-                                Nome da Categoria / Botão <span class="text-red-500">*</span>
-                            </label>
-                            <input type="text" id="nomeMacroGrupo" required placeholder="Ex: Mãe, Cuidados, Remédios..."
-                                   class="w-full px-3 py-2 text-xs font-semibold border-2 border-slate-200 rounded-xl focus:border-purple-600 focus:outline-none transition-colors">
-                        </div>
-
-                        <div>
-                            <label class="block text-xs font-bold text-slate-700 mb-1">
-                                Frases/Falantes (até 5 opções):
-                            </label>
-                            <div class="space-y-1.5">
-                                <input type="text" id="frase1" placeholder="1. Vem cá por favor" class="w-full px-3 py-1.5 text-xs border border-slate-200 rounded-lg focus:border-purple-500 focus:outline-none">
-                                <input type="text" id="frase2" placeholder="2. Preciso de ajuda" class="w-full px-3 py-1.5 text-xs border border-slate-200 rounded-lg focus:border-purple-500 focus:outline-none">
-                                <input type="text" id="frase3" placeholder="3. Quero deitar" class="w-full px-3 py-1.5 text-xs border border-slate-200 rounded-lg focus:border-purple-500 focus:outline-none">
-                                <input type="text" id="frase4" placeholder="4. Me dá o celular" class="w-full px-3 py-1.5 text-xs border border-slate-200 rounded-lg focus:border-purple-500 focus:outline-none">
-                                <input type="text" id="frase5" placeholder="5. Te amo" class="w-full px-3 py-1.5 text-xs border border-slate-200 rounded-lg focus:border-purple-500 focus:outline-none">
-                            </div>
-                        </div>
-
-                        <button type="submit" class="touch-btn w-full bg-emerald-600 active:bg-emerald-700 text-white font-extrabold text-xs py-2.5 rounded-xl shadow-sm flex items-center justify-center gap-2 mt-2">
-                            <i class="fa-solid fa-floppy-disk"></i> Salvar Macro no Celular
+                    <div class="flex gap-2 pt-2">
+                        <button onclick="salvarNovaMacro()" class="flex-1 bg-purple-600 hover:bg-purple-500 text-white font-bold py-3 rounded-lg text-sm shadow active:scale-95 transition-all flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-floppy-disk"></i> Salvar Macro
                         </button>
-                    </form>
-                </div>
-
-                <!-- Management Card -->
-                <div class="bg-white border border-slate-200 rounded-2xl p-3 shadow-sm flex items-center justify-between">
-                    <div>
-                        <h3 class="font-bold text-xs text-slate-800">Gerenciar Macros Existentes</h3>
-                        <p class="text-[10px] text-slate-400">Exclua ou revise itens salvos</p>
-                    </div>
-                    <button onclick="abrirModalExcluirMacros()" class="touch-btn bg-red-100 text-red-700 hover:bg-red-200 font-bold text-xs px-3 py-1.5 rounded-lg border border-red-200">
-                        <i class="fa-solid fa-trash-can"></i> Gerenciar
-                    </button>
-                </div>
-            </div>
-
-            <!-- TAB 3: DIGITAÇÃO LIVRE / TECLADO MOBILE -->
-            <div id="tabTeclado" class="tab-page flex-1 flex-col p-3 gap-3 min-h-0 overflow-y-auto mobile-scroll">
-                <div class="bg-white border border-slate-200 rounded-2xl p-3.5 shadow-sm space-y-3 flex-1 flex flex-col">
-                    <div class="flex items-center gap-2 border-b border-slate-100 pb-2">
-                        <div class="w-7 h-7 rounded-lg bg-sky-100 text-sky-700 flex items-center justify-center text-xs font-bold">
-                            <i class="fa-solid fa-keyboard"></i>
-                        </div>
-                        <div>
-                            <h2 class="font-extrabold text-sm text-slate-800">Escrever Frase Livre</h2>
-                            <p class="text-[10px] text-slate-400">Use o teclado do seu smartphone</p>
-                        </div>
-                    </div>
-
-                    <div class="flex-1 flex flex-col gap-2">
-                        <textarea id="campoTextoMobile" rows="4" placeholder="Digite aqui o que você quer falar..." 
-                                  class="w-full p-3 text-sm font-semibold border-2 border-slate-200 rounded-xl focus:border-purple-600 focus:outline-none transition-colors resize-none flex-1"></textarea>
-
-                        <div class="grid grid-cols-2 gap-2">
-                            <button onclick="limparTextoMobile()" class="touch-btn bg-slate-200 text-slate-700 font-bold text-xs py-2.5 rounded-xl flex items-center justify-center gap-1.5">
-                                <i class="fa-solid fa-eraser"></i> Limpar
-                            </button>
-                            <button onclick="enviarTextoMobile()" class="touch-btn bg-amber-500 active:bg-amber-600 text-white font-extrabold text-xs py-2.5 rounded-xl shadow-sm flex items-center justify-center gap-1.5">
-                                <i class="fa-solid fa-paper-plane"></i> Falar Frase
-                            </button>
-                        </div>
+                        <button onclick="limparCamposMacro()" class="bg-slate-700 hover:bg-slate-600 text-slate-300 font-bold px-4 py-3 rounded-lg text-sm active:scale-95 transition-all">
+                            Limpar
+                        </button>
                     </div>
                 </div>
-            </div>
-
-        </main>
-
-        <!-- QUICK EXPRESS BUTTONS BAR (Sem o botão 'Última Fala') -->
-        <div class="bg-slate-200/90 backdrop-blur-xs p-1.5 border-t border-slate-300 flex-shrink-0">
-            <div class="grid grid-cols-3 gap-1.5">
-                <button onclick="falar('SIM')" class="touch-btn bg-emerald-600 text-white font-black text-xs py-2 rounded-xl shadow-xs flex items-center justify-center gap-1">
-                    <i class="fa-solid fa-check text-sm"></i> SIM
-                </button>
-                <button onclick="falar('NÃO')" class="touch-btn bg-rose-600 text-white font-black text-xs py-2 rounded-xl shadow-xs flex items-center justify-center gap-1">
-                    <i class="fa-solid fa-xmark text-sm"></i> NÃO
-                </button>
-                <button onclick="falar('Preciso de ajuda')" class="touch-btn bg-amber-600 text-white font-black text-[11px] py-2 rounded-xl shadow-xs flex items-center justify-center gap-1">
-                    <i class="fa-solid fa-hand text-xs"></i> Ajuda
-                </button>
             </div>
         </div>
 
-        <!-- BOTTOM MOBILE NAVIGATION TAB BAR -->
-        <nav class="bg-slate-900 text-slate-400 pb-safe pt-2 px-2 border-t border-slate-800 flex justify-around flex-shrink-0">
-            <button onclick="mudarAba('tabPrancha')" id="nav-tabPrancha" class="touch-btn flex flex-col items-center gap-0.5 px-3 py-1 text-purple-400 font-bold">
-                <i class="fa-solid fa-rotate-left text-base"></i>
-                <span class="text-[10px]">Voltar</span>
-            </button>
-            <button onclick="mudarAba('tabMacros')" id="nav-tabMacros" class="touch-btn flex flex-col items-center gap-0.5 px-3 py-1 hover:text-slate-200 font-bold">
-                <i class="fa-solid fa-plus-circle text-base"></i>
-                <span class="text-[10px]">Criar Macro</span>
-            </button>
-            <button onclick="mudarAba('tabTeclado')" id="nav-tabTeclado" class="touch-btn flex flex-col items-center gap-0.5 px-3 py-1 hover:text-slate-200 font-bold">
-                <i class="fa-solid fa-font text-base"></i>
-                <span class="text-[10px]">Digitar</span>
-            </button>
-        </nav>
+        <!-- ABA 3: TECLADO / ESCRITA MOMENTÂNEA -->
+        <div id="tabDigitar" class="hidden flex-col gap-3">
+            <div class="bg-slate-800 border border-slate-700 rounded-xl p-4">
+                <h2 class="text-sm font-bold text-blue-400 uppercase tracking-wide mb-3 flex items-center gap-2">
+                    <i class="fa-solid fa-keyboard"></i> Escrever e Falar
+                </h2>
 
-    </div>
+                <div class="space-y-3">
+                    <textarea id="txtDigitarLivre" rows="4" placeholder="Digite aqui o que você deseja falar..." class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-base text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 resize-none"></textarea>
 
-    <!-- MODAL DE EXCLUSÃO DE MACROS (CELULAR) -->
-    <div id="modalExcluir" class="fixed inset-0 bg-slate-950/70 backdrop-blur-xs z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
-        <div class="bg-white rounded-t-3xl sm:rounded-2xl shadow-2xl max-w-md w-full p-4 space-y-3 border border-slate-200 max-h-[85vh] flex flex-col">
-            <div class="flex items-center justify-between border-b border-slate-100 pb-2 flex-shrink-0">
-                <div class="flex items-center gap-2 text-red-600">
-                    <i class="fa-solid fa-trash-can text-base"></i>
-                    <h3 class="font-extrabold text-sm text-slate-900">Excluir e Gerenciar Macros</h3>
+                    <div class="flex gap-2">
+                        <button onclick="falarTextoLivre()" class="flex-1 bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-lg text-sm shadow active:scale-95 transition-all flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-volume-high"></i> Falar Texto
+                        </button>
+                        <button onclick="limparTextoLivre()" class="bg-slate-700 hover:bg-slate-600 text-slate-300 font-bold px-4 py-3 rounded-lg text-sm active:scale-95 transition-all">
+                            <i class="fa-solid fa-eraser"></i>
+                        </button>
+                    </div>
                 </div>
-                <button onclick="fecharModalExcluir()" class="text-slate-400 p-1">
-                    <i class="fa-solid fa-xmark text-lg"></i>
-                </button>
             </div>
+        </div>
 
-            <p class="text-xs text-slate-600 flex-shrink-0">
-                Toque em <b>Apagar</b> ao lado da macro que deseja excluir do seu celular:
-            </p>
+    </main>
 
-            <!-- Scrollable List of Saved Macros -->
-            <div id="listaMacrosModal" class="flex-1 overflow-y-auto mobile-scroll space-y-2 pr-0.5 min-h-[120px]">
-                <!-- Populated via JavaScript -->
-            </div>
-
-            <div class="flex flex-col gap-2 pt-2 border-t border-slate-100 flex-shrink-0">
-                <button onclick="apagarTodosMacros()" class="touch-btn w-full text-xs font-bold text-red-600 bg-red-50 hover:bg-red-100 py-2 rounded-xl transition-colors flex items-center justify-center gap-1.5">
-                    <i class="fa-solid fa-dumpster"></i> Apagar TODAS as Macros do Celular
-                </button>
-                <button onclick="fecharModalExcluir()" class="touch-btn w-full bg-slate-200 active:bg-slate-300 text-slate-800 font-bold text-xs py-2.5 rounded-xl">
-                    Fechar
-                </button>
-            </div>
+    <!-- FOOTER PERMANENTE DE RESPOSTAS RÁPIDAS -->
+    <div class="fixed bottom-14 left-0 right-0 bg-slate-950/90 backdrop-blur-md border-t border-slate-800 px-3 py-2 z-20">
+        <div class="max-w-md mx-auto grid grid-cols-4 gap-1.5">
+            <button onclick="falar('Sim')" class="h-10 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-lg text-xs flex items-center justify-center gap-1 shadow active:scale-95 transition-all">
+                <i class="fa-solid fa-check"></i> SIM
+            </button>
+            <button onclick="falar('Não')" class="h-10 bg-rose-600 hover:bg-rose-500 text-white font-bold rounded-lg text-xs flex items-center justify-center gap-1 shadow active:scale-95 transition-all">
+                <i class="fa-solid fa-xmark"></i> NÃO
+            </button>
+            <button onclick="falar('Preciso de ajuda!')" class="h-10 bg-amber-600 hover:bg-amber-500 text-white font-bold rounded-lg text-xs flex items-center justify-center gap-1 shadow active:scale-95 transition-all">
+                <i class="fa-solid fa-triangle-exclamation"></i> Ajuda
+            </button>
+            <button onclick="falarEstouDigitando()" class="h-10 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-lg text-xs flex items-center justify-center gap-1 shadow active:scale-95 transition-all">
+                <i class="fa-solid fa-keyboard"></i> Digitando...
+            </button>
         </div>
     </div>
 
+    <!-- BOTTOM NAVIGATION TABS -->
+    <nav class="fixed bottom-0 left-0 right-0 bg-slate-900 border-t border-slate-800 h-14 z-30">
+        <div class="max-w-md mx-auto h-full grid grid-cols-3">
+            <button onclick="mudarAba('prancha')" id="navPrancha" class="flex flex-col items-center justify-center text-purple-400 font-semibold text-xs">
+                <i class="fa-solid fa-grip text-base mb-0.5"></i>
+                <span>Prancha</span>
+            </button>
+            <button onclick="mudarAba('macro')" id="navMacro" class="flex flex-col items-center justify-center text-slate-400 font-semibold text-xs hover:text-slate-200">
+                <i class="fa-solid fa-plus-circle text-base mb-0.5"></i>
+                <span>Criar Macro</span>
+            </button>
+            <button onclick="mudarAba('digitar')" id="navDigitar" class="flex flex-col items-center justify-center text-slate-400 font-semibold text-xs hover:text-slate-200">
+                <i class="fa-solid fa-keyboard text-base mb-0.5"></i>
+                <span>Teclado</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- SCRIPT JS -->
     <script>
-        // Global State Variables
-        let vozesPTBR = [];
-        let vozSelecionada = null;
-        let generoVozAtual = 'feminino'; // 'feminino' ou 'masculino'
-        const STORAGE_KEY = 'fala_mobile_macros_v1';
+        // Estado da Aplicação
+        let modoExclusaoAtivo = false;
+        let ultimaFraseDita = "";
+        let generoVoz = 'female';
 
-        // Estrutura de dados para a Prancha Padrão
-        const dadosPrancha = {
-            Comida: {
-                "Quero comer": ["Arroz e Feijão", "Lanche/Salgado", "Fruta", "Doce", "Sopa"],
-                "Quero beber": ["Água", "Suco", "Refrigerante", "Café", "Leite"],
-                "Modo de preparo": ["Quente", "Gelado", "Sem açúcar", "Com pouco sal"]
-            },
-            Dor: {
-                "Estou sentindo dor": ["Na cabeça", "Na barriga", "Nas costas", "Nas pernas", "No dente"],
-                "Intensidade": ["Pouca dor", "Muita dor", "Insuportável"],
-                "Ajuda": ["Preciso de remédio", "Me ajuda a deitar", "Chama o médico"]
-            },
-            Banheiro: {
-                "Necessidades": ["Fazer xixi", "Fazer cocô", "Tomar banho"],
-                "Higiene": ["Escovar os dentes", "Lavar as mãos", "Trocar de roupa"]
-            },
-            Cumprimento: {
-                "Saudações": ["Olá, tudo bem?", "Bom dia", "Boa tarde", "Boa noite", "Tchau"],
-                "Agradecimento": ["Obrigado(a)", "Por favor", "De nada", "Com licença"]
-            },
-            Resposta: {
-                "Respostas diretas": ["Sim", "Não", "Talvez", "Não sei", "Entendi"],
-                "Opinião": ["Gostei", "Não gostei", "Quero", "Não quero"]
-            }
+        // Categorias Padrão do Nível 1 com Sub-opções
+        const categoriasPadrao = {
+            'Comida': [
+                'Quero água',
+                'Estou com fome',
+                'Quero comer pão',
+                'Quero biscoito',
+                'Quero tomar suco',
+                'Quero café'
+            ],
+            'Dor': [
+                'Estou sentindo dor',
+                'Minha cabeça está doendo',
+                'Dor na barriga',
+                'Preciso de remédio',
+                'Estou enjoado',
+                'Me ajuda a deitar'
+            ],
+            'Banheiro': [
+                'Quero ir ao banheiro',
+                'Preciso escovar os dentes',
+                'Quero tomar banho',
+                'Preciso me lavar',
+                'Acabou o papel'
+            ],
+            'Cumprimento': [
+                'Bom dia!',
+                'Boa tarde!',
+                'Boa noite!',
+                'Olá, tudo bem?',
+                'Obrigado(a)',
+                'Tchau!'
+            ]
         };
 
-        /* --- SÍNTESE E SELEÇÃO DE VOZ (FEMININO / MASCULINO PT-BR) --- */
-        function carregarVozes() {
-            if (!('speechSynthesis' in window)) return;
-
-            const todasVozes = window.speechSynthesis.getVoices();
-            // Filtrar apenas vozes em Português do Brasil ou Português geral
-            vozesPTBR = todasVozes.filter(v => v.lang.includes('pt-BR') || v.lang.includes('pt_BR') || v.lang.startsWith('pt'));
-
-            atualizarVozPorGenero();
-        }
-
-        function selecionarGeneroVoz(genero) {
-            generoVozAtual = genero;
-
-            const btnFem = document.getElementById('btnVozFem');
-            const btnMasc = document.getElementById('btnVozMasc');
-
-            if (genero === 'feminino') {
-                btnFem.className = "touch-btn bg-purple-600 text-white font-extrabold text-[11px] py-1 px-2 rounded-lg flex items-center justify-center gap-1 shadow-xs";
-                btnMasc.className = "touch-btn bg-slate-700 text-slate-300 font-extrabold text-[11px] py-1 px-2 rounded-lg flex items-center justify-center gap-1";
-            } else {
-                btnMasc.className = "touch-btn bg-purple-600 text-white font-extrabold text-[11px] py-1 px-2 rounded-lg flex items-center justify-center gap-1 shadow-xs";
-                btnFem.className = "touch-btn bg-slate-700 text-slate-300 font-extrabold text-[11px] py-1 px-2 rounded-lg flex items-center justify-center gap-1";
-            }
-
-            atualizarVozPorGenero();
-            falar(`Voz ${genero} selecionada`);
-        }
-
-        function atualizarVozPorGenero() {
-            if (vozesPTBR.length === 0) return;
-
-            // Busca por palavras-chave comuns em nomes de sintaxe para identificar voz masculina ou feminina
-            const nomesMasculinos = ['daniel', 'ricardo', 'felipe', 'thago', 'antonio', 'male', 'homem', 'lucas', 'george'];
-            
-            if (generoVozAtual === 'masculino') {
-                const vozMasc = vozesPTBR.find(v => nomesMasculinos.some(nome => v.name.toLowerCase().includes(nome)));
-                vozSelecionada = vozMasc || vozesPTBR[0];
-            } else {
-                // Feminina (padrão caso não ache termo masculino específico)
-                const vozFem = vozesPTBR.find(v => !nomesMasculinos.some(nome => v.name.toLowerCase().includes(nome)));
-                vozSelecionada = vozFem || vozesPTBR[0];
-            }
-        }
-
-        if ('speechSynthesis' in window) {
-            window.speechSynthesis.onvoiceschanged = carregarVozes;
-            carregarVozes();
-        }
-
+        // Síntese de Voz Web Speech API
         function falar(texto) {
             if (!texto) return;
+            
+            ultimaFraseDita = texto;
+            document.getElementById('txtUltimaFala').textContent = texto;
 
             if ('speechSynthesis' in window) {
-                window.speechSynthesis.cancel();
-
-                const utterance = new SpeechSynthesisUtterance(texto);
+                window.speechSynthesis.cancel(); // Cancela falas anteriores
                 
-                if (vozSelecionada) {
-                    utterance.voice = vozSelecionada;
-                    utterance.lang = vozSelecionada.lang;
-                } else {
-                    utterance.lang = 'pt-BR';
+                const utterance = new SpeechSynthesisUtterance(texto);
+                utterance.lang = 'pt-BR';
+                utterance.rate = 1.0;
+
+                // Tenta buscar vozes em português brasileiras
+                const voices = window.speechSynthesis.getVoices();
+                const ptVoices = voices.filter(v => v.lang.includes('pt') || v.lang.includes('PT'));
+
+                if (ptVoices.length > 0) {
+                    if (generoVoz === 'female') {
+                        utterance.voice = ptVoices.find(v => v.name.toLowerCase().includes('feminine') || v.name.toLowerCase().includes('luciana') || v.name.toLowerCase().includes('maria') || v.name.toLowerCase().includes('google')) || ptVoices[0];
+                    } else {
+                        utterance.voice = ptVoices.find(v => v.name.toLowerCase().includes('male') || v.name.toLowerCase().includes('felipe') || v.name.toLowerCase().includes('daniel')) || ptVoices[0];
+                    }
                 }
 
-                utterance.rate = 0.92;
-                utterance.pitch = (generoVozAtual === 'feminino') ? 1.1 : 0.85; // Ajuste suave no pitch para reforçar a distinção de voz
-
-                const indicator = document.getElementById('speechIndicator');
-
-                utterance.onstart = () => {
-                    if (indicator) indicator.classList.remove('hidden');
-                };
-
-                utterance.onend = utterance.onerror = () => {
-                    if (indicator) indicator.classList.add('hidden');
+                // Animação visual no card de fala
+                const icon = document.getElementById('speakIcon');
+                icon.classList.add('bg-purple-600', 'text-white', 'speaking-active');
+                
+                utterance.onend = () => {
+                    icon.classList.remove('bg-purple-600', 'text-white', 'speaking-active');
                 };
 
                 window.speechSynthesis.speak(utterance);
             }
         }
 
-        /* --- TECLADO E DIGITAÇÃO --- */
-        function enviarTextoMobile() {
-            const textarea = document.getElementById('campoTextoMobile');
-            if (!textarea) return;
-            const texto = textarea.value.trim();
-            if (texto) {
-                falar(texto);
+        function repetirUltimaFala() {
+            if (ultimaFraseDita) {
+                falar(ultimaFraseDita);
             }
         }
 
-        function limparTextoMobile() {
-            const textarea = document.getElementById('campoTextoMobile');
-            if (textarea) textarea.value = '';
-        }
+        function definirVozGenerica(genero) {
+            generoVoz = genero;
+            const btnF = document.getElementById('btnVoiceFemale');
+            const btnM = document.getElementById('btnVoiceMale');
 
-        /* --- NAVEGAÇÃO DE ABAS --- */
-        function mudarAba(abaId) {
-            document.querySelectorAll('.tab-page').forEach(el => el.classList.remove('active'));
-            const alvo = document.getElementById(abaId);
-            if (alvo) alvo.classList.add('active');
-
-            const navTabs = ['nav-tabPrancha', 'nav-tabMacros', 'nav-tabTeclado'];
-            navTabs.forEach(id => {
-                const btn = document.getElementById(id);
-                if (btn) {
-                    btn.classList.remove('text-purple-400');
-                    btn.classList.add('text-slate-400');
-                }
-            });
-
-            const btnAtivo = document.getElementById(`nav-${abaId}`);
-            if (btnAtivo) {
-                btnAtivo.classList.remove('text-slate-400');
-                btnAtivo.classList.add('text-purple-400');
+            if (genero === 'female') {
+                btnF.className = "px-2 py-1 rounded bg-purple-600 text-white font-medium transition-all";
+                btnM.className = "px-2 py-1 rounded text-slate-400 hover:text-white transition-all";
+            } else {
+                btnM.className = "px-2 py-1 rounded bg-purple-600 text-white font-medium transition-all";
+                btnF.className = "px-2 py-1 rounded text-slate-400 hover:text-white transition-all";
             }
+            falar(genero === 'female' ? "Voz feminina selecionada" : "Voz masculina selecionada");
         }
 
-        /* --- PRANCHA E NÍVEIS --- */
-        function fecharAteNivel(nivel) {
-            if (nivel < 2) {
-                const p2 = document.getElementById('painelNivel2');
-                if (p2) p2.classList.add('hidden');
+        /* ABRIR CATEGORIAS E MACROS (COM SCROLL AUTOMÁTICO PARA O TOPO DA SEÇÃO) */
+        function abrirCategoriaPadrao(nome) {
+            falar(nome);
+            const opcoes = categoriasPadrao[nome] || [];
+            exibirSubNiveis(nome, opcoes);
+        }
+
+        function abrirMacroUsuario(nome, frases) {
+            if (modoExclusaoAtivo) {
+                excluirMacro(nome);
+                return;
             }
-            if (nivel < 3) {
-                const p3 = document.getElementById('painelNivel3');
-                if (p3) p3.classList.add('hidden');
-            }
+            falar(nome);
+            exibirSubNiveis(nome, frases);
         }
 
-        function selecionarNivel1(categoria) {
-            const painel2 = document.getElementById('painelNivel2');
-            const conteudo2 = document.getElementById('conteudoNivel2');
-            const label2 = document.getElementById('labelNivel2');
+        function exibirSubNiveis(titulo, listaOpcoes) {
+            const painel = document.getElementById('painelSubNivel');
+            const txtTitulo = document.getElementById('subNivelTitulo');
+            const container = document.getElementById('conteudoSubNivel');
 
-            fecharAteNivel(1);
-
-            if (!dadosPrancha[categoria]) return;
-
-            label2.innerHTML = `<i class="fa-solid fa-list-ul"></i> ${categoria}`;
-            conteudo2.innerHTML = '';
-
-            Object.keys(dadosPrancha[categoria]).forEach(subcat => {
-                const btn = document.createElement('button');
-                btn.className = "touch-btn bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs px-3 py-2 rounded-xl shadow-xs flex items-center gap-1.5";
-                btn.innerHTML = `<span>${subcat}</span>`;
-                btn.onclick = () => selecionarNivel2(categoria, subcat);
-                conteudo2.appendChild(btn);
-            });
-
-            painel2.classList.remove('hidden');
-        }
-
-        function selecionarNivel2(categoria, subcat) {
-            const painel3 = document.getElementById('painelNivel3');
-            const conteudo3 = document.getElementById('conteudoNivel3');
-            const label3 = document.getElementById('labelNivel3');
-
-            fecharAteNivel(2);
-
-            const opcoes = dadosPrancha[categoria][subcat];
-            if (!opcoes) return;
-
-            label3.innerHTML = `<i class="fa-solid fa-tags"></i> ${subcat}`;
-            conteudo3.innerHTML = '';
-
-            opcoes.forEach(item => {
-                const btn = document.createElement('button');
-                btn.className = "touch-btn bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs px-3 py-2 rounded-xl shadow-xs flex items-center gap-1.5";
-                btn.innerHTML = `<span>${item}</span>`;
-                btn.onclick = () => falar(item);
-                conteudo3.appendChild(btn);
-            });
-
-            painel3.classList.remove('hidden');
-        }
-
-        /* --- GERENCIAMENTO DE MACROS (LOCALSTORAGE) --- */
-        function obterMacrosSalvas() {
-            try {
-                const data = localStorage.getItem(STORAGE_KEY);
-                return data ? JSON.parse(data) : [];
-            } catch (e) {
-                console.error("Erro ao ler localStorage", e);
-                return [];
-            }
-        }
-
-        function salvarMacrosStorage(macros) {
-            try {
-                localStorage.setItem(STORAGE_KEY, JSON.stringify(macros));
-            } catch (e) {
-                console.error("Erro ao gravar no localStorage", e);
-            }
-        }
-
-        function renderizarMacrosNivel1() {
-            const container = document.getElementById('containerMacrosNivel1');
-            if (!container) return;
-
+            txtTitulo.textContent = `Opções de "${titulo}"`;
             container.innerHTML = '';
-            const macros = obterMacrosSalvas();
 
-            macros.forEach((macro, idx) => {
+            listaOpcoes.forEach(item => {
                 const btn = document.createElement('button');
-                btn.className = "touch-btn flex items-center gap-2 bg-purple-100 hover:bg-purple-200 text-purple-950 border border-purple-300/80 rounded-xl p-2.5 font-bold text-xs shadow-xs";
-                btn.innerHTML = `<i class="fa-solid fa-star text-purple-600 text-sm"></i> <span class="truncate">${macro.nome}</span>`;
-                btn.onclick = () => abrirMacroUsuario(idx);
+                btn.className = "min-h-[50px] p-3 rounded-lg bg-purple-900/90 hover:bg-purple-800 border border-purple-600/80 text-purple-100 font-bold text-xs sm:text-sm text-center flex items-center justify-center shadow active:scale-95 transition-all";
+                btn.textContent = item;
+                btn.onclick = () => falar(item);
                 container.appendChild(btn);
             });
+
+            painel.classList.remove('hidden');
+            painel.classList.add('flex');
+
+            // ROLA A TELA SUAVEMENTE ATÉ O PAINEL DE SUBNÍVEIS PARA FICAR LOGO EM CIMA
+            painel.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
 
-        function abrirMacroUsuario(index) {
-            const macros = obterMacrosSalvas();
-            const macro = macros[index];
-            if (!macro) return;
-
-            fecharAteNivel(1);
-
-            const painel2 = document.getElementById('painelNivel2');
-            const conteudo2 = document.getElementById('conteudoNivel2');
-            const label2 = document.getElementById('labelNivel2');
-
-            label2.innerHTML = `<i class="fa-solid fa-star"></i> ${macro.nome}`;
-            conteudo2.innerHTML = '';
-
-            macro.frases.forEach(frase => {
-                const btn = document.createElement('button');
-                btn.className = "touch-btn bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs px-3 py-2 rounded-xl shadow-xs flex items-center gap-1.5";
-                btn.innerHTML = `<span>${frase}</span>`;
-                btn.onclick = () => falar(frase);
-                conteudo2.appendChild(btn);
-            });
-
-            painel2.classList.remove('hidden');
+        function fecharSubNivel() {
+            const painel = document.getElementById('painelSubNivel');
+            painel.classList.add('hidden');
+            painel.classList.remove('flex');
         }
 
-        function salvarMacroForm(e) {
-            e.preventDefault();
-            const nomeInput = document.getElementById('nomeMacroGrupo');
-            const nome = nomeInput ? nomeInput.value.trim() : '';
-
-            const frases = [];
-            for (let i = 1; i <= 5; i++) {
-                const fInput = document.getElementById(`frase${i}`);
-                if (fInput && fInput.value.trim() !== '') {
-                    frases.push(fInput.value.trim());
-                }
-            }
-
-            if (!nome || frases.length === 0) {
-                alert('Informe um nome para a Macro e pelo menos uma frase.');
+        /* SALVAR E CARREGAR MACROS DO LOCALSTORAGE */
+        function salvarNovaMacro() {
+            const nome = document.getElementById('inputNomeMacro').value.trim();
+            if (!nome) {
+                alert("Por favor, digite o nome da Macro.");
                 return;
             }
 
-            const macros = obterMacrosSalvas();
-            macros.push({ nome, frases });
-            salvarMacrosStorage(macros);
-
-            // Reset Form
-            nomeInput.value = '';
+            const falas = [];
             for (let i = 1; i <= 5; i++) {
-                const fInput = document.getElementById(`frase${i}`);
-                if (fInput) fInput.value = '';
+                const val = document.getElementById(`inputFala${i}`).value.trim();
+                if (val) falas.push(val);
             }
 
-            renderizarMacrosNivel1();
-            mudarAba('tabPrancha');
+            if (falas.length === 0) {
+                alert("Digite pelo menos uma fala para esta macro.");
+                return;
+            }
+
+            const macros = JSON.parse(localStorage.getItem('caa_macros_mobile') || '{}');
+            macros[nome] = falas;
+            localStorage.setItem('caa_macros_mobile', JSON.stringify(macros));
+
+            limparCamposMacro();
+            carregarMacrosSalvas();
+            mudarAba('prancha');
             falar(`Macro ${nome} criada com sucesso`);
         }
 
-        /* --- MODAL EXCLUIR MACROS --- */
-        function abrirModalExcluirMacros() {
-            const modal = document.getElementById('modalExcluir');
-            const lista = document.getElementById('listaMacrosModal');
-            if (!modal || !lista) return;
+        function carregarMacrosSalvas() {
+            const container = document.getElementById('containerMacros');
+            container.innerHTML = '';
 
-            const macros = obterMacrosSalvas();
-            lista.innerHTML = '';
+            const macros = JSON.parse(localStorage.getItem('caa_macros_mobile') || '{}');
+            const nomes = Object.keys(macros);
 
-            if (macros.length === 0) {
-                lista.innerHTML = '<p class="text-xs text-slate-400 py-4 text-center italic">Nenhuma macro personalizada salva.</p>';
+            if (nomes.length === 0) {
+                container.innerHTML = `
+                    <div class="col-span-2 text-center py-4 text-xs text-slate-500 italic">
+                        Nenhuma macro personalizada criada ainda. Toque em "Criar Macro" abaixo.
+                    </div>
+                `;
+                return;
+            }
+
+            nomes.forEach(nome => {
+                const wrapper = document.createElement('div');
+                wrapper.className = "relative group";
+
+                const btn = document.createElement('button');
+                btn.className = modoExclusaoAtivo 
+                    ? "w-full h-14 rounded-lg bg-red-950/80 border-2 border-red-500 text-red-200 font-bold text-xs sm:text-sm shadow flex items-center justify-between px-3 active:scale-95 transition-all"
+                    : "w-full h-14 rounded-lg bg-gradient-to-r from-purple-700 to-indigo-800 text-white font-bold text-xs sm:text-sm shadow flex items-center justify-center gap-1.5 px-2 active:scale-95 transition-all hover:brightness-110";
+
+                if (modoExclusaoAtivo) {
+                    btn.innerHTML = `<span>${nome}</span> <i class="fa-solid fa-trash-can text-red-400"></i>`;
+                } else {
+                    btn.innerHTML = `<i class="fa-solid fa-star text-amber-300 text-xs"></i> <span>${nome}</span>`;
+                }
+
+                btn.onclick = () => abrirMacroUsuario(nome, macros[nome]);
+                wrapper.appendChild(btn);
+                container.appendChild(wrapper);
+            });
+        }
+
+        function alternarModoExclusao() {
+            modoExclusaoAtivo = !modoExclusaoAtivo;
+            const btnModo = document.getElementById('btnModoExcluir');
+
+            if (modoExclusaoAtivo) {
+                btnModo.className = "text-xs bg-red-600 text-white px-2.5 py-1 rounded-lg border border-red-500 flex items-center gap-1 transition-all animate-pulse";
+                btnModo.innerHTML = `<i class="fa-solid fa-xmark"></i> Cancelar Exclusão`;
             } else {
-                macros.forEach((macro, index) => {
-                    const item = document.createElement('div');
-                    item.className = "flex items-center justify-between bg-slate-50 border border-slate-200 p-2 rounded-xl";
-                    item.innerHTML = `
-                        <div class="overflow-hidden pr-2">
-                            <h4 class="font-bold text-xs text-slate-800 truncate">${macro.nome}</h4>
-                            <p class="text-[10px] text-slate-400">${macro.frases.length} frase(s)</p>
-                        </div>
-                        <button onclick="excluirMacroUnica(${index})" class="touch-btn bg-red-100 hover:bg-red-200 text-red-700 font-bold text-xs px-2.5 py-1 rounded-lg border border-red-200 flex-shrink-0">
-                            Apagar
-                        </button>
-                    `;
-                    lista.appendChild(item);
-                });
+                btnModo.className = "text-xs bg-slate-700 hover:bg-slate-600 text-slate-300 px-2.5 py-1 rounded-lg border border-slate-600 flex items-center gap-1 transition-all";
+                btnModo.innerHTML = `<i class="fa-solid fa-trash-can text-red-400"></i> Excluir Macro`;
             }
 
-            modal.classList.remove('hidden');
+            carregarMacrosSalvas();
         }
 
-        function fecharModalExcluir() {
-            const modal = document.getElementById('modalExcluir');
-            if (modal) modal.classList.add('hidden');
-        }
-
-        function excluirMacroUnica(index) {
-            let macros = obterMacrosSalvas();
-            macros.splice(index, 1);
-            salvarMacrosStorage(macros);
-            renderizarMacrosNivel1();
-            abrirModalExcluirMacros();
-        }
-
-        function apagarTodosMacros() {
-            if (confirm('Tem certeza de que deseja apagar todas as macros personalizadas?')) {
-                salvarMacrosStorage([]);
-                renderizarMacrosNivel1();
-                fecharModalExcluir();
+        function excluirMacro(nome) {
+            if (confirm(`Deseja realmente apagar a macro "${nome}"?`)) {
+                const macros = JSON.parse(localStorage.getItem('caa_macros_mobile') || '{}');
+                delete macros[nome];
+                localStorage.setItem('caa_macros_mobile', JSON.stringify(macros));
+                fecharSubNivel();
+                carregarMacrosSalvas();
+                falar(`Macro ${nome} excluída`);
             }
         }
 
-        // Inicialização do App
-        document.addEventListener('DOMContentLoaded', () => {
-            renderizarMacrosNivel1();
+        function limparCamposMacro() {
+            document.getElementById('inputNomeMacro').value = '';
+            for (let i = 1; i <= 5; i++) {
+                document.getElementById(`inputFala${i}`).value = '';
+            }
+        }
+
+        /* FUNÇÕES DA ABA DIGITAR & BOTAO "ESTOU DIGITANDO" */
+        function falarEstouDigitando() {
+            falar("Estou digitando, só um momento...");
+            mudarAba('digitar');
+            setTimeout(() => {
+                document.getElementById('txtDigitarLivre').focus();
+            }, 300);
+        }
+
+        function falarTextoLivre() {
+            const txt = document.getElementById('txtDigitarLivre').value.trim();
+            if (txt) {
+                falar(txt);
+            }
+        }
+
+        function limparTextoLivre() {
+            document.getElementById('txtDigitarLivre').value = '';
+        }
+
+        /* NAVEGAÇÃO ENTRE ABAS */
+        function mudarAba(aba) {
+            const tabPrancha = document.getElementById('tabPrancha');
+            const tabMacro = document.getElementById('tabCriarMacro');
+            const tabDigitar = document.getElementById('tabDigitar');
+
+            const navP = document.getElementById('navPrancha');
+            const navM = document.getElementById('navMacro');
+            const navD = document.getElementById('navDigitar');
+
+            tabPrancha.classList.add('hidden');
+            tabMacro.classList.add('hidden');
+            tabDigitar.classList.add('hidden');
+
+            navP.className = "flex flex-col items-center justify-center text-slate-400 font-semibold text-xs hover:text-slate-200";
+            navM.className = "flex flex-col items-center justify-center text-slate-400 font-semibold text-xs hover:text-slate-200";
+            navD.className = "flex flex-col items-center justify-center text-slate-400 font-semibold text-xs hover:text-slate-200";
+
+            if (aba === 'prancha') {
+                tabPrancha.classList.remove('hidden');
+                navP.className = "flex flex-col items-center justify-center text-purple-400 font-semibold text-xs";
+            } else if (aba === 'macro') {
+                tabMacro.classList.remove('hidden');
+                navM.className = "flex flex-col items-center justify-center text-purple-400 font-semibold text-xs";
+            } else if (aba === 'digitar') {
+                tabDigitar.classList.remove('hidden');
+                navD.className = "flex flex-col items-center justify-center text-blue-400 font-semibold text-xs";
+            }
+        }
+
+        // Inicialização
+        window.addEventListener('DOMContentLoaded', () => {
+            carregarMacrosSalvas();
+            // Carrega vozes com antecedência
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.onvoiceschanged = () => {
+                    window.speechSynthesis.getVoices();
+                };
+            }
         });
     </script>
 </body>
