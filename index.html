@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Fala Mobile - App de Comunicação CAA</title>
+    <!-- Google AdSense -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3561545053478118"
+         crossorigin="anonymous"></script>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome for Icons -->
@@ -15,7 +18,6 @@
             user-select: none;
             font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
         }
-
         .no-scrollbar::-webkit-scrollbar {
             display: none;
         }
@@ -23,21 +25,18 @@
             -ms-overflow-style: none;
             scrollbar-width: none;
         }
-
         /* Pulsing animation for speech output */
         @keyframes pulse-ring {
             0% { transform: scale(0.95); opacity: 0.8; }
             50% { transform: scale(1.02); opacity: 1; }
             100% { transform: scale(0.95); opacity: 0.8; }
         }
-
         .speaking-active {
             animation: pulse-ring 1.2s infinite ease-in-out;
         }
     </style>
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col justify-between overflow-x-hidden antialiased">
-
     <!-- TOP HEADER -->
     <header class="bg-slate-800 border-b border-slate-700 px-4 py-3 sticky top-0 z-30 shadow-md">
         <div class="max-w-md mx-auto flex items-center justify-between">
@@ -65,10 +64,8 @@
             </div>
         </div>
     </header>
-
     <!-- MAIN CONTENT CONTAINER -->
     <main class="flex-1 max-w-md mx-auto w-full p-3 pb-24 flex flex-col gap-3">
-
         <!-- FEEDBACK BAR (SPEECH OUTPUT BANNER) -->
         <div id="speakingBanner" class="bg-slate-800 border border-slate-700 rounded-xl p-3 shadow-inner flex items-center justify-between min-h-[56px]">
             <div class="flex items-center space-x-3 overflow-hidden">
@@ -84,7 +81,6 @@
                 <i class="fa-solid fa-rotate-right"></i>
             </button>
         </div>
-
         <!-- SEÇÃO / SUB-NÍVEIS (MOSTRADO NO TOPO QUANDO SELECIONADO) -->
         <div id="painelSubNivel" class="hidden bg-purple-950/70 border-2 border-purple-500/80 rounded-xl p-3 shadow-lg flex-col gap-3">
             <div class="flex items-center justify-between border-b border-purple-800/60 pb-2">
@@ -101,7 +97,6 @@
                 <!-- Botões de subnível renderizados via JS -->
             </div>
         </div>
-
         <!-- ABA 1: PRANCHA PRINCIPAL (NÍVEL 1 + MACROS) -->
         <div id="tabPrancha" class="flex flex-col gap-3">
             
@@ -128,7 +123,6 @@
                     </button>
                 </div>
             </div>
-
             <!-- MACROS PERSONALIZADAS COM EXCLUSÃO -->
             <div class="bg-slate-800/80 border border-slate-700/80 rounded-xl p-3 relative">
                 <div class="flex items-center justify-between mb-2">
@@ -139,11 +133,9 @@
                         <i class="fa-solid fa-trash-can text-red-400"></i> Excluir Macro
                     </button>
                 </div>
-
                 <div id="containerMacros" class="grid grid-cols-2 gap-2 min-h-[80px]">
                     <!-- Macros carregadas dinamicamente do localStorage -->
                 </div>
-
                 <!-- Botão Flutuante de Atalho/Aviso de Exclusão no canto inferior direito -->
                 <div class="flex justify-end mt-3 pt-2 border-t border-slate-700/50">
                     <button onclick="alternarModoExclusao()" class="bg-red-600/90 hover:bg-red-600 text-white text-xs font-bold px-3 py-1.5 rounded-lg border border-red-500 shadow flex items-center gap-1.5 active:scale-95 transition-all">
@@ -152,21 +144,33 @@
                 </div>
             </div>
 
+            <!-- BLOCO DE ANÚNCIO DISCRETO (BANNER PEQUENO) -->
+            <div class="bg-slate-800/60 border border-slate-700/50 rounded-xl p-2 text-center">
+                <span class="text-[10px] text-slate-500 uppercase tracking-widest block mb-1">Publicidade</span>
+                <div class="min-h-[60px] flex items-center justify-center bg-slate-900/50 rounded-lg overflow-hidden">
+                    <ins class="adsbygoogle"
+                         style="display:block"
+                         data-ad-client="ca-pub-3561545053478118"
+                         data-ad-slot="3997196501"
+                         data-ad-format="auto"
+                         data-full-width-responsive="true"></ins>
+                    <script>
+                         (adsbygoogle = window.adsbygoogle || []).push({});
+                    </script>
+                </div>
+            </div>
         </div>
-
         <!-- ABA 2: CRIAR/EDITAR MACROS -->
         <div id="tabCriarMacro" class="hidden flex-col gap-3">
             <div class="bg-slate-800 border border-slate-700 rounded-xl p-4">
                 <h2 class="text-sm font-bold text-purple-300 uppercase tracking-wide mb-3 flex items-center gap-2">
                     <i class="fa-solid fa-circle-plus"></i> Nova Macro / Categoria
                 </h2>
-
                 <div class="space-y-3">
                     <div>
                         <label class="block text-xs font-medium text-slate-400 mb-1">Nome do Botão Principal (ex: Mãe, Remédio):</label>
                         <input type="text" id="inputNomeMacro" placeholder="Digite o nome da categoria..." class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-purple-500">
                     </div>
-
                     <div class="border-t border-slate-700 pt-3">
                         <label class="block text-xs font-medium text-slate-400 mb-2">Digite até 5 opções de falas para esta categoria:</label>
                         <div class="space-y-2">
@@ -177,7 +181,6 @@
                             <input type="text" id="inputFala5" placeholder="Fala 5 (ex: Te amo, mãe)" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-white focus:outline-none focus:border-purple-500">
                         </div>
                     </div>
-
                     <div class="flex gap-2 pt-2">
                         <button onclick="salvarNovaMacro()" class="flex-1 bg-purple-600 hover:bg-purple-500 text-white font-bold py-3 rounded-lg text-sm shadow active:scale-95 transition-all flex items-center justify-center gap-2">
                             <i class="fa-solid fa-floppy-disk"></i> Salvar Macro
@@ -189,17 +192,14 @@
                 </div>
             </div>
         </div>
-
         <!-- ABA 3: TECLADO / ESCRITA MOMENTÂNEA -->
         <div id="tabDigitar" class="hidden flex-col gap-3">
             <div class="bg-slate-800 border border-slate-700 rounded-xl p-4">
                 <h2 class="text-sm font-bold text-blue-400 uppercase tracking-wide mb-3 flex items-center gap-2">
                     <i class="fa-solid fa-keyboard"></i> Escrever e Falar
                 </h2>
-
                 <div class="space-y-3">
                     <textarea id="txtDigitarLivre" rows="4" placeholder="Digite aqui o que você deseja falar..." class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-base text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 resize-none"></textarea>
-
                     <div class="flex gap-2">
                         <button onclick="falarTextoLivre()" class="flex-1 bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-lg text-sm shadow active:scale-95 transition-all flex items-center justify-center gap-2">
                             <i class="fa-solid fa-volume-high"></i> Falar Texto
@@ -211,9 +211,7 @@
                 </div>
             </div>
         </div>
-
     </main>
-
     <!-- FOOTER PERMANENTE DE RESPOSTAS RÁPIDAS -->
     <div class="fixed bottom-14 left-0 right-0 bg-slate-950/90 backdrop-blur-md border-t border-slate-800 px-3 py-2 z-20">
         <div class="max-w-md mx-auto grid grid-cols-4 gap-1.5">
@@ -231,7 +229,6 @@
             </button>
         </div>
     </div>
-
     <!-- BOTTOM NAVIGATION TABS -->
     <nav class="fixed bottom-0 left-0 right-0 bg-slate-900 border-t border-slate-800 h-14 z-30">
         <div class="max-w-md mx-auto h-full grid grid-cols-3">
@@ -249,14 +246,12 @@
             </button>
         </div>
     </nav>
-
     <!-- SCRIPT JS -->
     <script>
         // Estado da Aplicação
         let modoExclusaoAtivo = false;
         let ultimaFraseDita = "";
         let generoVoz = 'female';
-
         // Categorias Padrão do Nível 1 com Sub-opções
         const categoriasPadrao = {
             'Comida': [
@@ -291,25 +286,21 @@
                 'Tchau!'
             ]
         };
-
         // Síntese de Voz Web Speech API
         function falar(texto) {
             if (!texto) return;
             
             ultimaFraseDita = texto;
             document.getElementById('txtUltimaFala').textContent = texto;
-
             if ('speechSynthesis' in window) {
                 window.speechSynthesis.cancel(); // Cancela falas anteriores
                 
                 const utterance = new SpeechSynthesisUtterance(texto);
                 utterance.lang = 'pt-BR';
                 utterance.rate = 1.0;
-
                 // Tenta buscar vozes em português brasileiras
                 const voices = window.speechSynthesis.getVoices();
                 const ptVoices = voices.filter(v => v.lang.includes('pt') || v.lang.includes('PT'));
-
                 if (ptVoices.length > 0) {
                     if (generoVoz === 'female') {
                         utterance.voice = ptVoices.find(v => v.name.toLowerCase().includes('feminine') || v.name.toLowerCase().includes('luciana') || v.name.toLowerCase().includes('maria') || v.name.toLowerCase().includes('google')) || ptVoices[0];
@@ -317,7 +308,6 @@
                         utterance.voice = ptVoices.find(v => v.name.toLowerCase().includes('male') || v.name.toLowerCase().includes('felipe') || v.name.toLowerCase().includes('daniel')) || ptVoices[0];
                     }
                 }
-
                 // Animação visual no card de fala
                 const icon = document.getElementById('speakIcon');
                 icon.classList.add('bg-purple-600', 'text-white', 'speaking-active');
@@ -325,22 +315,18 @@
                 utterance.onend = () => {
                     icon.classList.remove('bg-purple-600', 'text-white', 'speaking-active');
                 };
-
                 window.speechSynthesis.speak(utterance);
             }
         }
-
         function repetirUltimaFala() {
             if (ultimaFraseDita) {
                 falar(ultimaFraseDita);
             }
         }
-
         function definirVozGenerica(genero) {
             generoVoz = genero;
             const btnF = document.getElementById('btnVoiceFemale');
             const btnM = document.getElementById('btnVoiceMale');
-
             if (genero === 'female') {
                 btnF.className = "px-2 py-1 rounded bg-purple-600 text-white font-medium transition-all";
                 btnM.className = "px-2 py-1 rounded text-slate-400 hover:text-white transition-all";
@@ -350,14 +336,12 @@
             }
             falar(genero === 'female' ? "Voz feminina selecionada" : "Voz masculina selecionada");
         }
-
         /* ABRIR CATEGORIAS E MACROS (COM SCROLL AUTOMÁTICO PARA O TOPO DA SEÇÃO) */
         function abrirCategoriaPadrao(nome) {
             falar(nome);
             const opcoes = categoriasPadrao[nome] || [];
             exibirSubNiveis(nome, opcoes);
         }
-
         function abrirMacroUsuario(nome, frases) {
             if (modoExclusaoAtivo) {
                 excluirMacro(nome);
@@ -366,15 +350,12 @@
             falar(nome);
             exibirSubNiveis(nome, frases);
         }
-
         function exibirSubNiveis(titulo, listaOpcoes) {
             const painel = document.getElementById('painelSubNivel');
             const txtTitulo = document.getElementById('subNivelTitulo');
             const container = document.getElementById('conteudoSubNivel');
-
             txtTitulo.textContent = `Opções de "${titulo}"`;
             container.innerHTML = '';
-
             listaOpcoes.forEach(item => {
                 const btn = document.createElement('button');
                 btn.className = "min-h-[50px] p-3 rounded-lg bg-purple-900/90 hover:bg-purple-800 border border-purple-600/80 text-purple-100 font-bold text-xs sm:text-sm text-center flex items-center justify-center shadow active:scale-95 transition-all";
@@ -382,20 +363,16 @@
                 btn.onclick = () => falar(item);
                 container.appendChild(btn);
             });
-
             painel.classList.remove('hidden');
             painel.classList.add('flex');
-
             // ROLA A TELA SUAVEMENTE ATÉ O PAINEL DE SUBNÍVEIS PARA FICAR LOGO EM CIMA
             painel.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
-
         function fecharSubNivel() {
             const painel = document.getElementById('painelSubNivel');
             painel.classList.add('hidden');
             painel.classList.remove('flex');
         }
-
         /* SALVAR E CARREGAR MACROS DO LOCALSTORAGE */
         function salvarNovaMacro() {
             const nome = document.getElementById('inputNomeMacro').value.trim();
@@ -403,35 +380,28 @@
                 alert("Por favor, digite o nome da Macro.");
                 return;
             }
-
             const falas = [];
             for (let i = 1; i <= 5; i++) {
                 const val = document.getElementById(`inputFala${i}`).value.trim();
                 if (val) falas.push(val);
             }
-
             if (falas.length === 0) {
                 alert("Digite pelo menos uma fala para esta macro.");
                 return;
             }
-
             const macros = JSON.parse(localStorage.getItem('caa_macros_mobile') || '{}');
             macros[nome] = falas;
             localStorage.setItem('caa_macros_mobile', JSON.stringify(macros));
-
             limparCamposMacro();
             carregarMacrosSalvas();
             mudarAba('prancha');
             falar(`Macro ${nome} criada com sucesso`);
         }
-
         function carregarMacrosSalvas() {
             const container = document.getElementById('containerMacros');
             container.innerHTML = '';
-
             const macros = JSON.parse(localStorage.getItem('caa_macros_mobile') || '{}');
             const nomes = Object.keys(macros);
-
             if (nomes.length === 0) {
                 container.innerHTML = `
                     <div class="col-span-2 text-center py-4 text-xs text-slate-500 italic">
@@ -440,32 +410,26 @@
                 `;
                 return;
             }
-
             nomes.forEach(nome => {
                 const wrapper = document.createElement('div');
                 wrapper.className = "relative group";
-
                 const btn = document.createElement('button');
                 btn.className = modoExclusaoAtivo 
                     ? "w-full h-14 rounded-lg bg-red-950/80 border-2 border-red-500 text-red-200 font-bold text-xs sm:text-sm shadow flex items-center justify-between px-3 active:scale-95 transition-all"
                     : "w-full h-14 rounded-lg bg-gradient-to-r from-purple-700 to-indigo-800 text-white font-bold text-xs sm:text-sm shadow flex items-center justify-center gap-1.5 px-2 active:scale-95 transition-all hover:brightness-110";
-
                 if (modoExclusaoAtivo) {
                     btn.innerHTML = `<span>${nome}</span> <i class="fa-solid fa-trash-can text-red-400"></i>`;
                 } else {
                     btn.innerHTML = `<i class="fa-solid fa-star text-amber-300 text-xs"></i> <span>${nome}</span>`;
                 }
-
                 btn.onclick = () => abrirMacroUsuario(nome, macros[nome]);
                 wrapper.appendChild(btn);
                 container.appendChild(wrapper);
             });
         }
-
         function alternarModoExclusao() {
             modoExclusaoAtivo = !modoExclusaoAtivo;
             const btnModo = document.getElementById('btnModoExcluir');
-
             if (modoExclusaoAtivo) {
                 btnModo.className = "text-xs bg-red-600 text-white px-2.5 py-1 rounded-lg border border-red-500 flex items-center gap-1 transition-all animate-pulse";
                 btnModo.innerHTML = `<i class="fa-solid fa-xmark"></i> Cancelar Exclusão`;
@@ -473,10 +437,8 @@
                 btnModo.className = "text-xs bg-slate-700 hover:bg-slate-600 text-slate-300 px-2.5 py-1 rounded-lg border border-slate-600 flex items-center gap-1 transition-all";
                 btnModo.innerHTML = `<i class="fa-solid fa-trash-can text-red-400"></i> Excluir Macro`;
             }
-
             carregarMacrosSalvas();
         }
-
         function excluirMacro(nome) {
             if (confirm(`Deseja realmente apagar a macro "${nome}"?`)) {
                 const macros = JSON.parse(localStorage.getItem('caa_macros_mobile') || '{}');
@@ -487,14 +449,12 @@
                 falar(`Macro ${nome} excluída`);
             }
         }
-
         function limparCamposMacro() {
             document.getElementById('inputNomeMacro').value = '';
             for (let i = 1; i <= 5; i++) {
                 document.getElementById(`inputFala${i}`).value = '';
             }
         }
-
         /* FUNÇÕES DA ABA DIGITAR & BOTAO "ESTOU DIGITANDO" */
         function falarEstouDigitando() {
             falar("Estou digitando, só um momento...");
@@ -503,36 +463,29 @@
                 document.getElementById('txtDigitarLivre').focus();
             }, 300);
         }
-
         function falarTextoLivre() {
             const txt = document.getElementById('txtDigitarLivre').value.trim();
             if (txt) {
                 falar(txt);
             }
         }
-
         function limparTextoLivre() {
             document.getElementById('txtDigitarLivre').value = '';
         }
-
         /* NAVEGAÇÃO ENTRE ABAS */
         function mudarAba(aba) {
             const tabPrancha = document.getElementById('tabPrancha');
             const tabMacro = document.getElementById('tabCriarMacro');
             const tabDigitar = document.getElementById('tabDigitar');
-
             const navP = document.getElementById('navPrancha');
             const navM = document.getElementById('navMacro');
             const navD = document.getElementById('navDigitar');
-
             tabPrancha.classList.add('hidden');
             tabMacro.classList.add('hidden');
             tabDigitar.classList.add('hidden');
-
             navP.className = "flex flex-col items-center justify-center text-slate-400 font-semibold text-xs hover:text-slate-200";
             navM.className = "flex flex-col items-center justify-center text-slate-400 font-semibold text-xs hover:text-slate-200";
             navD.className = "flex flex-col items-center justify-center text-slate-400 font-semibold text-xs hover:text-slate-200";
-
             if (aba === 'prancha') {
                 tabPrancha.classList.remove('hidden');
                 navP.className = "flex flex-col items-center justify-center text-purple-400 font-semibold text-xs";
@@ -544,7 +497,6 @@
                 navD.className = "flex flex-col items-center justify-center text-blue-400 font-semibold text-xs";
             }
         }
-
         // Inicialização
         window.addEventListener('DOMContentLoaded', () => {
             carregarMacrosSalvas();
